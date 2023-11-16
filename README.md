@@ -26,6 +26,7 @@ To use this project, you first need to download it from GitHub. You can use the 
 Then you need to enter the project folder and install the required dependencies. You can use the following commands for this:
 
 ```cd internet-speed-checker```
+‌
 ```pip install -r requirements.txt```
 
 Finally, to run the project, you need to execute the main.py file. You can use the following command for this:
@@ -35,17 +36,4 @@ Finally, to run the project, you need to execute the main.py file. You can use t
 ## Licenses and Authorship
 This project is published under the MIT license. For license details, you can view the LICENSE file. The authorship of this project belongs to your name and your colleagues.
 
-## Collaboration and Support
-If you wish, you can collaborate with us and help us develop and improve this project. You can use the following ways for this:
 
-- Sending a pull request to add new features or fix bugs
-- Sending an issue to report errors or suggestions
-- Sending a star to support the project
-
-If you have any questions or need more help, you can contact us. Our contact information is as follows:
-
-- Email: name@example.com
-- Phone: 123456789
-- Website: [website]
-
-I hope this README file is useful for you. 😊
