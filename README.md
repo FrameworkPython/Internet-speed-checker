@@ -28,7 +28,7 @@ Then you need to enter the project folder and install the required dependencies.
 ```cd internet-speed-checker```<br/>
 ‌```pip install -r requirements.txt```
 
-Finally, to run the project, you need to execute the main.py file. You can use the following command for this:
+Finally, to run the project, you need to execute the NetSpeedChecker.py file. You can use the following command for this:
 
 ```python NetSpeedChecker.py```
 
