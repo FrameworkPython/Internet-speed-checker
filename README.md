@@ -26,8 +26,7 @@ To use this project, you first need to download it from GitHub. You can use the 
 Then you need to enter the project folder and install the required dependencies. You can use the following commands for this:
 
 ```cd internet-speed-checker```<br/>
-‌
-```pip install -r requirements.txt```
+‌```pip install -r requirements.txt```
 
 Finally, to run the project, you need to execute the main.py file. You can use the following command for this:
 
