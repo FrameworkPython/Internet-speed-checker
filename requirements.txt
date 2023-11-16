@@ -1,0 +1,4 @@
+requests
+speedtest
+tabulate
+termcolor
