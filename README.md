@@ -21,11 +21,11 @@ This project is created using the Python programming language and the following 
 ## Installation and Execution
 To use this project, you first need to download it from GitHub. You can use the following command for this:
 
-```git clone https://github.com/username/internet-speed-checker.git```
+```git clone https://github.com/FrameworkPython/internet-speed-checker.git```
 
 Then you need to enter the project folder and install the required dependencies. You can use the following commands for this:
 
-```cd internet-speed-checker```
+```cd internet-speed-checker```\n/n
 ‌
 ```pip install -r requirements.txt```
 
