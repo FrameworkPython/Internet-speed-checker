@@ -1,4 +1,4 @@
 requests
-speedtest
+speedtest-cli
 tabulate
 termcolor
