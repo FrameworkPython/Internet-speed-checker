@@ -31,7 +31,7 @@ Then you need to enter the project folder and install the required dependencies.
 
 Finally, to run the project, you need to execute the main.py file. You can use the following command for this:
 
-```python main.py```
+```python NetSpeedChecker.py```
 
 ## Licenses and Authorship
 This project is published under the MIT license. For license details, you can view the LICENSE file. The authorship of this project belongs to your name and your colleagues.
