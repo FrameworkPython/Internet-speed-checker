@@ -14,7 +14,7 @@ This project has the following features and capabilities:
 This project is created using the Python programming language and the following libraries:
 
 - [speedtest]: A Python library for measuring internet speed
-- [requests]: A Python library for sending and receiving HTTP requests
+- [httpx]: A Python library for sending and receiving HTTP requests
 - [tabulate]: A Python library for displaying data with tables
 - [termcolor]: A Python library for adding color to text
 
