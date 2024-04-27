@@ -1,4 +1,5 @@
-[Telegram Channel](https://t.me/PyFramework)\n
+[Telegram Channel](https://t.me/PyFramework)
+
 [My Account In Telegram](t.me/Framework_Python)
 [My Account in Rubika](https://rubika.ir/framework_pythonm)
 [Rubika Channel](https://rubika.ir/PyFramework)
