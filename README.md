@@ -1,7 +1,9 @@
 [Telegram Channel](https://t.me/PyFramework)
 
 [My Account In Telegram](t.me/Framework_Python)
+
 [My Account in Rubika](https://rubika.ir/framework_pythonm)
+
 [Rubika Channel](https://rubika.ir/PyFramework)
 # Internet Speed Checker
 This is a Python project that allows you to check your internet speed in terms of upload, download, ping, and location. This project measures your internet speed with high accuracy and displays the output with a beautiful table.
