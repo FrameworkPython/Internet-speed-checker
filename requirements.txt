@@ -1,4 +1,4 @@
-requests
+httpx[http2]
 speedtest-cli
 tabulate
 termcolor
