@@ -1,72 +1,67 @@
-import requests
+import httpx
 import speedtest
 from tabulate import tabulate
-from termcolor import colored
+import json
+import asyncio
 
 class InternetSpeedChecker:
 
     def __init__(self):
         self.st = speedtest.Speedtest()
-        self.ip = requests.get('https://api.ipify.org').text
-        self.location = requests.get(f'http://ip-api.com/json/{self.ip}').json()
-        self.server = self.st.get_best_server()
+        self.client = httpx.AsyncClient(http2=True)
 
-    def get_ping(self):
+    async def get_ip(self):
+        return await self.get_response_text('https://api.ipify.org')
+
+    async def get_location(self, ip):
+        return await self.get_response_json(f'http://ip-api.com/json/{ip}')
+
+    async def get_response_text(self, url):
+        response = await self.client.get(url)
+        return response.text
+
+    async def get_response_json(self, url):
+        response = await self.client.get(url)
+        return response.json()
+
+    async def get_ping(self):
         return self.st.results.ping
 
-    def get_upload_speed(self):
+    async def get_upload_speed(self):
+        return await self.get_average_speed(self.st.upload)
+
+    async def get_download_speed(self):
+        return await self.get_average_speed(self.st.download)
+
+    async def get_average_speed(self, method):
         total = 0
-        for i in range(3):
-            total += self.st.upload()
+        for _ in range(3):
+            total += method()
         return total / 3
 
-    def get_download_speed(self):
-        total = 0
-        for i in range(3):
-            total += self.st.download()
-        return total / 3
+    async def to_string(self, format='json'):
+        ip = await self.get_ip()
+        location = await self.get_location(ip)
+        data = {
+            'Ping (ms)': await self.get_ping(),
+            'Upload (Mbps)': await self.get_upload_speed() / 1024 / 1024,
+            'Download (Mbps)': await self.get_download_speed() / 1024 / 1024,
+            'Country': location['country'],
+            'City': location['city']
+        }
+        if format == 'json':
+            return json.dumps(data, indent=4)
+        elif format == 'table':
+            table_data = [[k, v] for k, v in data.items()]
+            return tabulate(table_data, headers=['Title', 'Value'], tablefmt='pretty', numalign='right', stralign='right')
 
-    def get_location(self):
-        return {'country': self.location['country'], 'city': self.location['city']}
+    async def close(self):
+        await self.client.aclose()
 
-    def __repr__(self):
-        return f'InternetSpeedChecker(ip={self.ip})'
-
-    def __str__(self):
-        data = [
-            ['Ping (ms)', colored(self.get_ping(), self.get_ping_color(self.get_ping()))],
-            ['Upload (Mbps)', colored(self.get_upload_speed() / 1024 / 1024, self.get_upload_color(self.get_upload_speed()))],
-            ['Download (Mbps)', colored(self.get_download_speed() / 1024 / 1024, self.get_download_color(self.get_download_speed()))],
-            ['Country', self.get_location()['country']],
-            ['City', self.get_location()['city']]
-        ]
-        table = tabulate(data, headers=['Title', 'Value'], tablefmt='pretty', numalign='right', stralign='right')
-        return table
-
-    def get_ping_color(self, ping):
-        if ping > 100:
-            return 'red'
-        elif ping > 50:
-            return 'yellow'
-        else:
-            return 'green'
-
-    def get_upload_color(self, upload_speed):
-        if upload_speed < 10 * 1024 * 1024:
-            return 'red'
-        elif upload_speed < 50 * 1024 * 1024:
-            return 'yellow'
-        else:
-            return 'green'
-
-    def get_download_color(self, download_speed):
-        if download_speed < 10 * 1024 * 1024:
-            return 'red'
-        elif download_speed < 50 * 1024 * 1024:
-            return 'yellow'
-        else:
-            return 'green'
-
-if __name__ == '__main__':
+async def main():
     isc = InternetSpeedChecker()
-    print(isc)
+    result = await isc.to_string(format='json') 
+    print(result)
+    await isc.close()
+
+asyncio.run(main())
