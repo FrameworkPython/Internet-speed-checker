@@ -8,21 +8,32 @@ import httpx
 
 class InternetSpeedChecker:
     def __init__(self):
-        self.client = httpx.AsyncClient(http2=True, timeout=10.0)
+        self.client = httpx.AsyncClient(http2=True, timeout=15.0)
         self.executor = ThreadPoolExecutor(max_workers=2)
+        self._speedtest_instance = None
 
-    async def get_ip(self) -> str:
+    async def prepare_speedtest(self):
+        loop = asyncio.get_running_loop()
+        self._speedtest_instance = await loop.run_in_executor(
+            self.executor, self._create_speedtest
+        )
+
+    def _create_speedtest(self):
+        from speedtest import Speedtest
+        st = Speedtest()
+        st.get_best_server()
+        return st
+
+    async def get_ip(self):
         r = await self.client.get("https://api.ipify.org")
         return r.text.strip()
 
-    async def get_location(self, ip: str) -> Dict[str, Any]:
+    async def get_location(self, ip: str):
         r = await self.client.get(f"http://ip-api.com/json/{ip}")
         return r.json()
 
     def _sync_measure(self):
-        from speedtest import Speedtest
-        st = Speedtest()
-        st.get_best_server()
+        st = self._speedtest_instance
         dl = st.download()
         ul = st.upload()
         return st.results.ping, dl, ul
@@ -33,6 +44,7 @@ class InternetSpeedChecker:
         return ping, dl, ul
 
     async def to_string(self, fmt: str = "json") -> str:
+        await self.prepare_speedtest()
         ip_task = self.get_ip()
         speed_task = self.measure_speed()
         ip, (ping, dl, ul) = await asyncio.gather(ip_task, speed_task)
