@@ -1,67 +1,68 @@
-import httpx
-import speedtest
-from tabulate import tabulate
-import json
 import asyncio
+import json
+from concurrent.futures import ThreadPoolExecutor
+from typing import Any, Dict
+
+import httpx
+
 
 class InternetSpeedChecker:
-
     def __init__(self):
-        self.st = speedtest.Speedtest()
-        self.client = httpx.AsyncClient(http2=True)
+        self.client = httpx.AsyncClient(http2=True, timeout=10.0)
+        self.executor = ThreadPoolExecutor(max_workers=2)
 
-    async def get_ip(self):
-        return await self.get_response_text('https://api.ipify.org')
+    async def get_ip(self) -> str:
+        r = await self.client.get("https://api.ipify.org")
+        return r.text.strip()
 
-    async def get_location(self, ip):
-        return await self.get_response_json(f'http://ip-api.com/json/{ip}')
+    async def get_location(self, ip: str) -> Dict[str, Any]:
+        r = await self.client.get(f"http://ip-api.com/json/{ip}")
+        return r.json()
 
-    async def get_response_text(self, url):
-        response = await self.client.get(url)
-        return response.text
+    def _sync_measure(self):
+        from speedtest import Speedtest
+        st = Speedtest()
+        st.get_best_server()
+        dl = st.download()
+        ul = st.upload()
+        return st.results.ping, dl, ul
 
-    async def get_response_json(self, url):
-        response = await self.client.get(url)
-        return response.json()
+    async def measure_speed(self):
+        loop = asyncio.get_running_loop()
+        ping, dl, ul = await loop.run_in_executor(self.executor, self._sync_measure)
+        return ping, dl, ul
 
-    async def get_ping(self):
-        return self.st.results.ping
+    async def to_string(self, fmt: str = "json") -> str:
+        ip_task = self.get_ip()
+        speed_task = self.measure_speed()
+        ip, (ping, dl, ul) = await asyncio.gather(ip_task, speed_task)
+        loc = await self.get_location(ip)
 
-    async def get_upload_speed(self):
-        return await self.get_average_speed(self.st.upload)
-
-    async def get_download_speed(self):
-        return await self.get_average_speed(self.st.download)
-
-    async def get_average_speed(self, method):
-        total = 0
-        for _ in range(3):
-            total += method()
-        return total / 3
-
-    async def to_string(self, format='json'):
-        ip = await self.get_ip()
-        location = await self.get_location(ip)
         data = {
-            'Ping (ms)': await self.get_ping(),
-            'Upload (Mbps)': await self.get_upload_speed() / 1024 / 1024,
-            'Download (Mbps)': await self.get_download_speed() / 1024 / 1024,
-            'Country': location['country'],
-            'City': location['city']
+            "Ping (ms)": round(ping, 2),
+            "Upload (Mbps)": round(ul / 1_000_000, 2),
+            "Download (Mbps)": round(dl / 1_000_000, 2),
+            "Country": loc.get("country", "N/A"),
+            "City": loc.get("city", "N/A"),
         }
-        if format == 'json':
-            return json.dumps(data, indent=4)
-        elif format == 'table':
-            table_data = [[k, v] for k, v in data.items()]
-            return tabulate(table_data, headers=['Title', 'Value'], tablefmt='pretty', numalign='right', stralign='right')
+
+        if fmt == "json":
+            return json.dumps(data, indent=4, ensure_ascii=False)
+        else:
+            from tabulate import tabulate
+            rows = [[k, v] for k, v in data.items()]
+            return tabulate(rows, headers=["Title", "Value"], tablefmt="plain", numalign="right")
 
     async def close(self):
         await self.client.aclose()
+        self.executor.shutdown(wait=False)
+
 
 async def main():
-    isc = InternetSpeedChecker()
-    result = await isc.to_string(format='json') 
+    checker = InternetSpeedChecker()
+    result = await checker.to_string("json")
     print(result)
-    await isc.close()
+    await checker.close()
+
 
 asyncio.run(main())
